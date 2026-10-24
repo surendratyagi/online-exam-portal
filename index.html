@@ -294,9 +294,9 @@
 
 <script>
 // ======================================================
-//  IMPORTANT: Paste your Google Apps Script Web App URL here
+//  YOUR BACKEND URL
 // ======================================================
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzBOZEqqwCl8NJfKZ2TExqIPrD2Y3_cdNO35rAOFxLiDjBg3HJgENtt-CMlZgQT6OUswg/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzKEM412BSIj57OMJ5vc3ES8kWPCUK5BzJd-rCrhEnwNEK_p0fhnApUalRzb_D3UwdkcA/exec";
 
 // ======================================================
 
@@ -341,14 +341,6 @@ async function startExam() {
         return;
     }
 
-    // Check if BACKEND_URL is set
-    if (!BACKEND_URL || BACKEND_URL.includes("YOUR_DEPLOYMENT_ID")) {
-        alert("Error: Backend URL not configured.\nPlease contact your teacher.");
-        startBtn.disabled = false;
-        startBtn.innerText = "🎥 Start Exam";
-        return;
-    }
-
     sessionId = Date.now() + "_" + Math.random().toString(36).substring(2, 9);
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -378,14 +370,12 @@ async function startExam() {
         return;
     }
 
-    // Setup video
     const video = document.getElementById("webcam");
     video.srcObject = mediaStream;
     document.getElementById("cameraStatus").innerHTML = "Camera: ✅ LIVE";
 
     logEvent("CAMERA_MICROPHONE_PERMISSION_GRANTED");
 
-    // Try fullscreen
     try {
         await document.documentElement.requestFullscreen();
         logEvent("FULLSCREEN_STARTED");
@@ -401,20 +391,15 @@ async function startExam() {
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("examScreen").style.display = "block";
 
-    // Send start event
     sendExamData("start");
-
-    // Start timer
     startTimer();
 
-    // Snapshot every 30 seconds
     captureInterval = setInterval(function () {
         if (!examSubmitted) {
             sendExamData("snapshot");
         }
     }, 30000);
 
-    // Proctoring events
     window.addEventListener("blur", () => logEvent("WINDOW_BLUR"));
     window.addEventListener("focus", () => logEvent("WINDOW_FOCUS"));
     document.addEventListener("visibilitychange", () => {
@@ -465,19 +450,45 @@ async function sendExamData(action) {
     };
 
     try {
+        console.log("Sending to backend:", action);
+
         const response = await fetch(BACKEND_URL, {
             method: "POST",
             body: JSON.stringify(data),
             headers: {
                 "Content-Type": "text/plain;charset=utf-8"
-            }
+            },
+            redirect: "follow"
         });
 
-        const result = await response.json();
+        const text = await response.text();
+        console.log("Raw response:", text);
+
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error("Response is not JSON:", text);
+            alert("Backend se galat response aaya.\n\n" + text.substring(0, 300));
+            sendInProgress = false;
+            return null;
+        }
+
+        console.log("Backend result:", result);
+
+        // Show detailed debug / error
+        if (result.status === "error") {
+            alert("ERROR:\n" + result.message + "\n\nDebug Info:\n" + (result.debug || []).join("\n"));
+        } else if (action === "final") {
+            alert("Success!\n\nDebug Info:\n" + (result.debug || []).join("\n"));
+        }
+
         sendInProgress = false;
         return result;
+
     } catch (error) {
-        console.error("sendExamData error:", error);
+        console.error("Fetch error:", error);
+        alert("Network Error: " + error.message);
         sendInProgress = false;
         return null;
     }
