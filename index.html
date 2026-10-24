@@ -296,8 +296,8 @@
 // ======================================================
 //  YOUR BACKEND URL
 // ======================================================
+//const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzKEM412BSIj57OMJ5vc3ES8kWPCUK5BzJd-rCrhEnwNEK_p0fhnApUalRzb_D3UwdkcA/exec";
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKBtPmbJWaR3COKV6YMd5LZa5xnignuwLMkxVlgaVN1qWBpU4lGo7IZ0ICU9pfUCMahg/exec";
-
 // ======================================================
 
 let mediaStream = null;
@@ -450,9 +450,6 @@ async function sendExamData(action) {
     };
 
     try {
-        console.log("Sending to backend:", action);
-
-        // GitHub Pages से Apps Script पर data पोस्ट करने के लिए no-cors / form payload का प्रयोग
         await fetch(BACKEND_URL, {
             method: "POST",
             mode: "no-cors",
@@ -462,78 +459,11 @@ async function sendExamData(action) {
             body: JSON.stringify(data)
         });
 
-        console.log("Data sent via POST (no-cors)");
         sendInProgress = false;
         return { status: "success" };
 
     } catch (error) {
         console.error("Fetch error:", error);
-        sendInProgress = false;
-        return null;
-    }
-}
-/*
-async function sendExamData(action) {
-    if (sendInProgress && action !== "final") return null;
-
-    sendInProgress = true;
-    const image = (action === "snapshot" || action === "final") ? captureImage() : null;
-    const eventData = events.splice(0, events.length);
-
-    const data = {
-        action: action,
-        roll: studentRoll,
-        name: studentName,
-        section: studentSection,
-        submissionId: sessionId,
-        startTime: examStartTime,
-        image: image,
-        answers: collectAnswers(),
-        events: eventData,
-        isFinal: action === "final"
-    };
-*/
-    
-    try {
-        console.log("Sending to backend:", action);
-
-        const response = await fetch(BACKEND_URL, {
-            method: "POST",
-            body: JSON.stringify(data),
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8"
-            },
-            redirect: "follow"
-        });
-
-        const text = await response.text();
-        console.log("Raw response:", text);
-
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch (e) {
-            console.error("Response is not JSON:", text);
-            alert("Backend se galat response aaya.\n\n" + text.substring(0, 300));
-            sendInProgress = false;
-            return null;
-        }
-
-        console.log("Backend result:", result);
-
-        // Show detailed debug / error
-        if (result.status === "error") {
-            alert("ERROR:\n" + result.message + "\n\nDebug Info:\n" + (result.debug || []).join("\n"));
-        } else if (action === "final") {
-            alert("Success!\n\nDebug Info:\n" + (result.debug || []).join("\n"));
-        }
-
-        sendInProgress = false;
-        return result;
-
-    } catch (error) {
-        console.error("Fetch error:", error);
-        alert("Network Error: " + error.message);
         sendInProgress = false;
         return null;
     }
