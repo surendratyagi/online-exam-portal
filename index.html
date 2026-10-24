@@ -3,66 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Examination Portal</title>
+    <title>ऑनलाइन परीक्षा पोर्टल (Online Exam Portal)</title>
     <style>
-        * { box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            background-color: #f4f6f9;
             margin: 0;
             padding: 20px;
-            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .container {
             width: 100%;
-            max-width: 850px;
-            margin: 30px auto;
+            max-width: 800px;
             background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        #loginScreen { max-width: 500px; }
-        .form-group { margin-bottom: 15px; }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        button {
-            width: 100%;
-            padding: 13px;
-            background: #198754;
-            color: white;
-            border: none;
-            border-radius: 7px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover { background: #157347; }
-        button:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-        }
-        #permissionStatus {
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 7px;
-            background: #fff3cd;
-            color: #856404;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        #examScreen { display: none; }
         header {
             display: flex;
             justify-content: space-between;
@@ -71,479 +30,237 @@
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
-        #timer {
-            font-size: 22px;
-            font-weight: bold;
-            color: #dc3545;
-        }
         .camera-box {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            width: 180px;
-            background: black;
-            border: 3px solid #dc3545;
-            border-radius: 8px;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            background: #000;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
             overflow: hidden;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .camera-label {
-            background: #dc3545;
-            color: white;
+            z-index: 1000;
             text-align: center;
-            padding: 4px;
-            font-size: 11px;
-            font-weight: bold;
         }
         #webcam {
             width: 100%;
+            height: auto;
             display: block;
             transform: scaleX(-1);
         }
-        #cameraStatus {
-            background: black;
-            color: #00ff00;
-            text-align: center;
-            padding: 4px;
+        .cam-label {
+            background: #ff4d4d;
+            color: white;
             font-size: 11px;
+            padding: 2px;
+            font-weight: bold;
+        }
+        .question-section {
+            margin-bottom: 20px;
         }
         .question {
-            padding: 18px;
-            margin-bottom: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #0d6efd;
-        }
-        .question-text {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
-        .option {
+        .options label {
             display: block;
-            padding: 8px 10px;
+            margin: 8px 0;
+            font-size: 16px;
             cursor: pointer;
-            font-weight: normal;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
             border-radius: 5px;
-            margin: 3px 0;
+            cursor: pointer;
         }
-        .option:hover { background: #e9ecef; }
-        #completedScreen {
-            display: none;
+        button:hover {
+            background-color: #218838;
+        }
+        #login-screen {
             text-align: center;
-            margin-top: 80px;
+            padding: 30px;
         }
-        .student-info {
-            background: #e7f1ff;
-            padding: 10px 15px;
-            border-radius: 6px;
+        #exam-screen {
+            display: none;
+        }
+        input[type="text"], select {
+            padding: 10px;
+            font-size: 16px;
+            width: 60%;
             margin-bottom: 15px;
-            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-<!-- ==================== LOGIN SCREEN ==================== -->
-<div class="container" id="loginScreen">
-    <h2>Online Examination Portal</h2>
-    <p style="text-align:center; color:#666; margin-bottom: 20px;">
-        परीक्षा शुरू करने से पहले अपनी जानकारी भरें।
-    </p>
-
-    <div id="permissionStatus">
-        🔒 Camera + Microphone Required<br><br>
-        <b>Start Exam</b> दबाने पर browser Camera और Microphone permission मांगेगा।<br>
-        दोनों permissions <b>Allow</b> करना अनिवार्य है।
+    <!-- लॉगिन स्क्रीन -->
+    <div class="container" id="login-screen">
+        <h2>ऑनलाइन परीक्षा पोर्टल</h2>
+        <p>परीक्षा शुरू करने के लिए अपनी जानकारी भरें। (कैमरा एक्सेस अनिवार्य है)</p>
+        
+        <div class="form-group">
+            <input type="text" id="student-roll" placeholder="रोल नंबर (Roll Number दर्ज करें)"><br>
+        </div>
+        <div class="form-group">
+            <input type="text" id="student-name" placeholder="छात्र का पूरा नाम (Student Name)"><br>
+        </div>
+        <div class="form-group">
+            <select id="student-section">
+                <option value="">-- सेक्शन चुनें (Select Section) --</option>
+                <option value="I">Section I</option>
+                <option value="H">Section H</option>
+            </select><br>
+        </div>
+        
+        <button onclick="startExam()">परीक्षा शुरू करें</button>
     </div>
 
-    <div class="form-group">
-        <label>Roll Number</label>
-        <input type="text" id="rollInput" placeholder="अपना Roll Number लिखें" autocomplete="off">
+    <!-- परीक्षा स्क्रीन -->
+    <div class="container" id="exam-screen">
+        <header>
+            <h2>प्रश्न पत्र</h2>
+            <span id="timer">समय शेष: 10:00</span>
+        </header>
+
+        <!-- हमेशा दिखने वाला फ्रंट कैमरा विंडो -->
+        <div class="camera-box">
+            <div class="cam-label">🔴 LIVE MONITORING</div>
+            <video id="webcam" autoplay playsinline muted></video>
+        </div>
+
+        <div class="question-section" id="questions-container">
+            <!-- प्रश्न 1 -->
+            <div class="question">प्रश्‍न 1: इंटरनेट ऑफ थिंग्स (IoT) में किस प्रकार के नियंत्रण का उपयोग मुख्य रूप से सुरक्षा के लिए किया जाता है?</div>
+            <div class="options">
+                <label><input type="radio" name="q1" value="A"> A) Context-Aware Access Control</label>
+                <label><input type="radio" name="q1" value="B"> B) Static Routing</label>
+                <label><input type="radio" name="q1" value="C"> C) Manual Switch</label>
+                <label><input type="radio" name="q1" value="D"> D) None of these</label>
+            </div>
+            
+            <br>
+            <!-- प्रश्न 2 -->
+            <div class="question">प्रश्‍न 2: मशीन लर्निंग में कौन सी एल्गोरिदम मुख्य रूप से ट्री-आधारित निर्णय के लिए जानी जाती है?</div>
+            <div class="options">
+                <label><input type="radio" name="q2" value="A"> A) Linear Regression</label>
+                <label><input type="radio" name="q2" value="B"> B) Decision Tree / Random Forest</label>
+                <label><input type="radio" name="q2" value="C"> C) K-Means</label>
+                <label><input type="radio" name="q2" value="D"> D) PCA</label>
+            </div>
+        </div>
+
+        <button onclick="submitExam()">परीक्षा समाप्त करें (Submit)</button>
     </div>
 
-    <div class="form-group">
-        <label>Student Name</label>
-        <input type="text" id="nameInput" placeholder="अपना पूरा नाम लिखें" autocomplete="off">
-    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
 
-    <div class="form-group">
-        <label>Section</label>
-        <select id="sectionSelect">
-            <option value="">-- Select Section --</option>
-            <option value="Section_I">Section I</option>
-            <option value="Section_H">Section H</option>
-        </select>
-    </div>
+    <script>
+        // यहाँ अपना Google Apps Script वाला Web App URL डालें 👇
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaK0ct-rRZ3mg9LdT2lFENHGa-9qgR4OCe3cdqhmaISaJ_Xu1KxjVbozPx95b7n6lccQ/exec";
+        
+        let studentRollNo = "";
+        let studentFullName = "";
+        let studentSec = "";
+        let captureInterval;
 
-    <button id="startBtn" onclick="startExam()">🎥 Start Exam</button>
-</div>
+        function startExam() {
+            studentRollNo = document.getElementById("student-roll").value.trim();
+            studentFullName = document.getElementById("student-name").value.trim();
+            studentSec = document.getElementById("student-section").value;
 
-<!-- ==================== EXAM SCREEN ==================== -->
-<div class="container" id="examScreen">
-    <header>
-        <div>
-            <h2 style="margin:0;">Online Examination</h2>
-            <div class="student-info" id="studentInfo"></div>
-        </div>
-        <span id="timer">10:00</span>
-    </header>
+            if (studentRollNo === "" || studentFullName === "" || studentSec === "") {
+                alert("कृपया रोल नंबर, नाम और सेक्शन सभी जानकारी सही से भरें।");
+                return;
+            }
 
-    <div class="camera-box">
-        <div class="camera-label">🔴 LIVE MONITORING</div>
-        <video id="webcam" autoplay playsinline muted></video>
-        <div id="cameraStatus">Camera: Checking...</div>
-    </div>
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(stream => {
+                    const videoElement = document.getElementById("webcam");
+                    videoElement.srcObject = stream;
 
-    <div id="questionsContainer">
-        <div class="question">
-            <div class="question-text">प्रश्न 1: IoT में सुरक्षा के लिए किस प्रकार का control उपयोग किया जाता है?</div>
-            <label class="option"><input type="radio" name="Question_1" value="A"> A) Context-Aware Access Control</label>
-            <label class="option"><input type="radio" name="Question_1" value="B"> B) Static Routing</label>
-            <label class="option"><input type="radio" name="Question_1" value="C"> C) Manual Switch</label>
-            <label class="option"><input type="radio" name="Question_1" value="D"> D) None of these</label>
-        </div>
+                    document.getElementById("login-screen").style.display = "none";
+                    document.getElementById("exam-screen").style.display = "block";
 
-        <div class="question">
-            <div class="question-text">प्रश्न 2: Machine Learning में tree-based decision के लिए कौन सी algorithm प्रसिद्ध है?</div>
-            <label class="option"><input type="radio" name="Question_2" value="A"> A) Linear Regression</label>
-            <label class="option"><input type="radio" name="Question_2" value="B"> B) Decision Tree / Random Forest</label>
-            <label class="option"><input type="radio" name="Question_2" value="C"> C) K-Means</label>
-            <label class="option"><input type="radio" name="Question_2" value="D"> D) PCA</label>
-        </div>
+                    // हर 30 सेकंड में फोटो और आंसर्स ड्राइव पर भेजेगा
+                    captureInterval = setInterval(() => {
+                        sendDataToDrive(false);
+                    }, 30000);
 
-        <div class="question">
-            <div class="question-text">प्रश्न 3: Cloud Computing का मुख्य लाभ क्या है?</div>
-            <label class="option"><input type="radio" name="Question_3" value="A"> A) High Cost</label>
-            <label class="option"><input type="radio" name="Question_3" value="B"> B) Scalability</label>
-            <label class="option"><input type="radio" name="Question_3" value="C"> C) Slow Speed</label>
-            <label class="option"><input type="radio" name="Question_3" value="D"> D) Limited Storage</label>
-        </div>
-
-        <div class="question">
-            <div class="question-text">प्रश्न 4: AI में Neural Network किससे प्रेरित है?</div>
-            <label class="option"><input type="radio" name="Question_4" value="A"> A) Human Brain</label>
-            <label class="option"><input type="radio" name="Question_4" value="B"> B) Computer CPU</label>
-            <label class="option"><input type="radio" name="Question_4" value="C"> C) Hard Disk</label>
-            <label class="option"><input type="radio" name="Question_4" value="D"> D) None</label>
-        </div>
-
-        <div class="question">
-            <div class="question-text">प्रश्न 5: Big Data की 3 V's में क्या शामिल नहीं है?</div>
-            <label class="option"><input type="radio" name="Question_5" value="A"> A) Volume</label>
-            <label class="option"><input type="radio" name="Question_5" value="B"> B) Velocity</label>
-            <label class="option"><input type="radio" name="Question_5" value="C"> C) Variety</label>
-            <label class="option"><input type="radio" name="Question_5" value="D"> D) Voltage</label>
-        </div>
-
-        <div class="question">
-            <div class="question-text">प्रश्न 6: Cyber Security में Firewall का मुख्य काम क्या है?</div>
-            <label class="option"><input type="radio" name="Question_6" value="A"> A) Data Encryption</label>
-            <label class="option"><input type="radio" name="Question_6" value="B"> B) Network Traffic Filter</label>
-            <label class="option"><input type="radio" name="Question_6" value="C"> C) Password Generation</label>
-            <label class="option"><input type="radio" name="Question_6" value="D"> D) File Compression</label>
-        </div>
-
-        <div class="question">
-            <div class="question-text">प्रश्न 7: Blockchain technology सबसे पहले किसके लिए इस्तेमाल हुई?</div>
-            <label class="option"><input type="radio" name="Question_7" value="A"> A) Bitcoin</label>
-            <label class="option"><input type="radio" name="Question_7" value="B"> B) Email</label>
-            <label class="option"><input type="radio" name="Question_7" value="C"> C) Social Media</label>
-            <label class="option"><input type="radio" name="Question_7" value="D"> D) Online Shopping</label>
-        </div>
-
-        <div class="question">
-            <div class="question-text">प्रश्न 8: 5G network की मुख्य विशेषता क्या है?</div>
-            <label class="option"><input type="radio" name="Question_8" value="A"> A) Low Latency</label>
-            <label class="option"><input type="radio" name="Question_8" value="B"> B) High Latency</label>
-            <label class="option"><input type="radio" name="Question_8" value="C"> C) Slow Speed</label>
-            <label class="option"><input type="radio" name="Question_8" value="D"> D) Limited Bandwidth</label>
-        </div>
-
-        <div class="question">
-            <div class="question-text">प्रश्न 9: Machine Learning में Supervised Learning का उदाहरण है?</div>
-            <label class="option"><input type="radio" name="Question_9" value="A"> A) Clustering</label>
-            <label class="option"><input type="radio" name="Question_9" value="B"> B) Classification</label>
-            <label class="option"><input type="radio" name="Question_9" value="C"> C) Dimensionality Reduction</label>
-            <label class="option"><input type="radio" name="Question_9" value="D"> D) Association</label>
-        </div>
-
-        <div class="question">
-            <div class="question-text">प्रश्न 10: IoT में MQTT protocol का उपयोग किस लिए होता है?</div>
-            <label class="option"><input type="radio" name="Question_10" value="A"> A) Video Streaming</label>
-            <label class="option"><input type="radio" name="Question_10" value="B"> B) File Transfer</label>
-            <label class="option"><input type="radio" name="Question_10" value="C"> C) Lightweight Messaging</label>
-            <label class="option"><input type="radio" name="Question_10" value="D"> D) Web Browsing</label>
-        </div>
-    </div>
-
-    <button id="submitBtn" onclick="submitExam(false)">परीक्षा समाप्त करें / Submit Exam</button>
-</div>
-
-<!-- ==================== COMPLETED SCREEN ==================== -->
-<div class="container" id="completedScreen">
-    <h1>✅ परीक्षा सफलतापूर्वक जमा हो गई</h1>
-    <p style="font-size:18px; margin-top:20px;">
-        आपका Answer Sheet और Proctoring Data सुरक्षित कर दिया गया है।
-    </p>
-    <p style="color:#666; margin-top:30px;">आप अब इस टैब को बंद कर सकते हैं।</p>
-</div>
-
-<canvas id="canvas" style="display:none;"></canvas>
-
-<script>
-// ======================================================
-//  YOUR BACKEND URL
-// ======================================================
-//const BACKEND_URL = "https://script.google.com/macros/s/AKfycby7hEt4sXq4-JYC_BIciCTS8llqfv54r_sZlpmRK_Xl8iiYky-02qt0nsui584OEgOF-g/exec";
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKBtPmbJWaR3COKV6YMd5LZa5xnignuwLMkxVlgaVN1qWBpU4lGo7IZ0ICU9pfUCMahg/exec";
-// ======================================================
-
-let mediaStream = null;
-let studentRoll = "";
-let studentName = "";
-let studentSection = "";
-let sessionId = "";
-let examStartTime = null;
-let captureInterval = null;
-let timerInterval = null;
-let remainingSeconds = 10 * 60; // 10 minutes
-let events = [];
-let sendInProgress = false;
-let examSubmitted = false;
-
-function logEvent(eventName) {
-    events.push({
-        time: new Date().toISOString(),
-        event: eventName
-    });
-}
-
-function updateStatus(message) {
-    const el = document.getElementById("permissionStatus");
-    if (el) el.innerHTML = message;
-}
-
-async function startExam() {
-    const startBtn = document.getElementById("startBtn");
-    startBtn.disabled = true;
-    startBtn.innerText = "कृपया प्रतीक्षा करें...";
-
-    studentRoll = document.getElementById("rollInput").value.trim();
-    studentName = document.getElementById("nameInput").value.trim();
-    studentSection = document.getElementById("sectionSelect").value;
-
-    if (!studentRoll || !studentName || !studentSection) {
-        alert("कृपया Roll Number, Name और Section भरें।");
-        startBtn.disabled = false;
-        startBtn.innerText = "🎥 Start Exam";
-        return;
-    }
-
-    sessionId = Date.now() + "_" + Math.random().toString(36).substring(2, 9);
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        updateStatus("❌ Browser Camera/Microphone support नहीं करता। Chrome या Edge इस्तेमाल करें।");
-        startBtn.disabled = false;
-        startBtn.innerText = "🎥 Start Exam";
-        return;
-    }
-
-    updateStatus("🔄 Camera और Microphone permission मांगी जा रही है...<br>कृपया <b>Allow</b> दबाएँ।");
-
-    try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: "user",
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            },
-            audio: true
-        });
-    } catch (error) {
-        logEvent("CAMERA_MICROPHONE_PERMISSION_DENIED");
-        updateStatus("❌ Camera/Microphone permission denied.<br><br>Exam शुरू करने के लिए दोनों permissions Allow करना आवश्यक है।");
-        alert("Exam शुरू करने के लिए Camera और Microphone के लिए Allow दबाना आवश्यक है।");
-        startBtn.disabled = false;
-        startBtn.innerText = "🎥 Start Exam";
-        return;
-    }
-
-    const video = document.getElementById("webcam");
-    video.srcObject = mediaStream;
-    document.getElementById("cameraStatus").innerHTML = "Camera: ✅ LIVE";
-
-    logEvent("CAMERA_MICROPHONE_PERMISSION_GRANTED");
-
-    try {
-        await document.documentElement.requestFullscreen();
-        logEvent("FULLSCREEN_STARTED");
-    } catch (error) {
-        logEvent("FULLSCREEN_REQUEST_FAILED");
-    }
-
-    examStartTime = new Date().toISOString();
-
-    document.getElementById("studentInfo").innerHTML =
-        `<b>${studentName}</b> | Roll: ${studentRoll} | ${studentSection}`;
-
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("examScreen").style.display = "block";
-
-    sendExamData("start");
-    startTimer();
-
-    captureInterval = setInterval(function () {
-        if (!examSubmitted) {
-            sendExamData("snapshot");
-        }
-    }, 30000);
-
-    window.addEventListener("blur", () => logEvent("WINDOW_BLUR"));
-    window.addEventListener("focus", () => logEvent("WINDOW_FOCUS"));
-    document.addEventListener("visibilitychange", () => {
-        logEvent(document.hidden ? "TAB_HIDDEN" : "TAB_VISIBLE");
-    });
-
-    logEvent("EXAM_STARTED");
-}
-
-function collectAnswers() {
-    const answers = {};
-    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-        answers[radio.name] = radio.value;
-    });
-    return answers;
-}
-
-function captureImage() {
-    const video = document.getElementById("webcam");
-    const canvas = document.getElementById("canvas");
-    if (!video || video.readyState < 2) return null;
-
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/jpeg", 0.65);
-}
-
-async function sendExamData(action) {
-    if (sendInProgress && action !== "final") return null;
-
-    sendInProgress = true;
-    const image = (action === "snapshot" || action === "final") ? captureImage() : null;
-    const eventData = events.splice(0, events.length);
-
-    const data = {
-        action: action,
-        roll: studentRoll,
-        name: studentName,
-        section: studentSection,
-        submissionId: sessionId,
-        startTime: examStartTime,
-        image: image,
-        answers: collectAnswers(),
-        events: eventData,
-        isFinal: action === "final"
-    };
-
-    try {
-        console.log("Sending to backend:", action);
-
-        const response = await fetch(BACKEND_URL, {
-            method: "POST",
-            body: JSON.stringify(data),
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8"
-            },
-            redirect: "follow"
-        });
-
-        const text = await response.text();
-        console.log("Raw response:", text);
-
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch (e) {
-            console.error("Response is not JSON:", text);
-            alert("Backend se galat response aaya.\n\n" + text.substring(0, 300));
-            sendInProgress = false;
-            return null;
+                })
+                .catch(error => {
+                    alert("कैमरा की अनुमति (Permission) देना अनिवार्य है! त्रुटि: " + error);
+                });
         }
 
-        console.log("Backend result:", result);
-
-        // Show detailed debug / error
-        if (result.status === "error") {
-            alert("ERROR:\n" + result.message + "\n\nDebug Info:\n" + (result.debug || []).join("\n"));
-        } else if (action === "final") {
-            alert("Success!\n\nDebug Info:\n" + (result.debug || []).join("\n"));
+        function collectAnswers() {
+            let answers = {};
+            const q1Selected = document.querySelector('input[name="q1"]:checked');
+            const q2Selected = document.querySelector('input[name="q2"]:checked');
+            
+            answers["Question_1"] = q1Selected ? q1Selected.value : "Not Answered";
+            answers["Question_2"] = q2Selected ? q2Selected.value : "Not Answered";
+            
+            return answers;
         }
 
-        sendInProgress = false;
-        return result;
+        function sendDataToDrive(isFinalSubmit) {
+            const video = document.getElementById("webcam");
+            const canvas = document.getElementById("canvas");
+            
+            canvas.width = video.videoWidth || 320;
+            canvas.height = video.videoHeight || 240;
+            
+            const context = canvas.getContext("2d");
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageDataURL = canvas.toDataURL("image/jpeg", 0.7);
+            const currentAnswers = collectAnswers();
 
-    } catch (error) {
-        console.error("Fetch error:", error);
-        alert("Network Error: " + error.message);
-        sendInProgress = false;
-        return null;
-    }
-}
-
-function startTimer() {
-    clearInterval(timerInterval);
-    updateTimer();
-    timerInterval = setInterval(() => {
-        remainingSeconds--;
-        updateTimer();
-        if (remainingSeconds <= 0) {
-            clearInterval(timerInterval);
-            submitExam(true);
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    rollNo: studentRollNo,
+                    name: studentFullName,
+                    section: studentSec,
+                    image: imageDataURL,
+                    answers: currentAnswers
+                })
+            }).then(() => {
+                if (isFinalSubmit) {
+                    alert("आपकी परीक्षा सफलतापूर्वक जमा हो गई है और डेटा Google Drive में सुरक्षित कर दिया गया है!");
+                    document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>धन्यवाद! आपकी परीक्षा सफलतापूर्वक पूरी हो चुकी है।</h1>";
+                }
+            }).catch(err => {
+                console.error("Upload failed:", err);
+            });
         }
-    }, 1000);
-}
 
-function updateTimer() {
-    const minutes = Math.floor(remainingSeconds / 60);
-    const seconds = remainingSeconds % 60;
-    document.getElementById("timer").innerHTML =
-        String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
-}
+        function submitExam() {
+            if (confirm("क्या आप वाकई परीक्षा समाप्त करना चाहते हैं?")) {
+                clearInterval(captureInterval);
+                sendDataToDrive(true);
 
-async function submitExam(isAuto = false) {
-    if (examSubmitted) return;
-
-    if (!isAuto) {
-        const confirmed = confirm("क्या आप वाकई परीक्षा समाप्त करना चाहते हैं?\n\nSubmit करने के बाद आप वापस नहीं जा सकते।");
-        if (!confirmed) return;
-    }
-
-    examSubmitted = true;
-    document.getElementById("submitBtn").disabled = true;
-    document.getElementById("submitBtn").innerText = "जमा हो रहा है...";
-
-    clearInterval(timerInterval);
-    clearInterval(captureInterval);
-
-    logEvent(isAuto ? "AUTO_SUBMITTED" : "MANUAL_SUBMITTED");
-
-    await sendExamData("final");
-
-    if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-    }
-
-    if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-    }
-
-    document.getElementById("examScreen").style.display = "none";
-    document.getElementById("completedScreen").style.display = "block";
-}
-</script>
+                const video = document.getElementById("webcam");
+                if (video.srcObject) {
+                    let tracks = video.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                }
+            }
+        }
+    </script>
 </body>
 </html>
