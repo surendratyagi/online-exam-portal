@@ -296,7 +296,7 @@
 // ======================================================
 //  YOUR BACKEND URL
 // ======================================================
-//const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzKEM412BSIj57OMJ5vc3ES8kWPCUK5BzJd-rCrhEnwNEK_p0fhnApUalRzb_D3UwdkcA/exec";
+//const BACKEND_URL = "https://script.google.com/macros/s/AKfycby7hEt4sXq4-JYC_BIciCTS8llqfv54r_sZlpmRK_Xl8iiYky-02qt0nsui584OEgOF-g/exec";
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwKBtPmbJWaR3COKV6YMd5LZa5xnignuwLMkxVlgaVN1qWBpU4lGo7IZ0ICU9pfUCMahg/exec";
 // ======================================================
 
@@ -450,20 +450,45 @@ async function sendExamData(action) {
     };
 
     try {
-        await fetch(BACKEND_URL, {
+        console.log("Sending to backend:", action);
+
+        const response = await fetch(BACKEND_URL, {
             method: "POST",
-            mode: "no-cors",
+            body: JSON.stringify(data),
             headers: {
-                "Content-Type": "text/plain"
+                "Content-Type": "text/plain;charset=utf-8"
             },
-            body: JSON.stringify(data)
+            redirect: "follow"
         });
 
+        const text = await response.text();
+        console.log("Raw response:", text);
+
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error("Response is not JSON:", text);
+            alert("Backend se galat response aaya.\n\n" + text.substring(0, 300));
+            sendInProgress = false;
+            return null;
+        }
+
+        console.log("Backend result:", result);
+
+        // Show detailed debug / error
+        if (result.status === "error") {
+            alert("ERROR:\n" + result.message + "\n\nDebug Info:\n" + (result.debug || []).join("\n"));
+        } else if (action === "final") {
+            alert("Success!\n\nDebug Info:\n" + (result.debug || []).join("\n"));
+        }
+
         sendInProgress = false;
-        return { status: "success" };
+        return result;
 
     } catch (error) {
         console.error("Fetch error:", error);
+        alert("Network Error: " + error.message);
         sendInProgress = false;
         return null;
     }
